@@ -1,4 +1,4 @@
-# CSC_NITJ
+# Cyber Security Club - NITJ
 
 Official website for the Cyber Security Club, NIT Jalandhar.
 
