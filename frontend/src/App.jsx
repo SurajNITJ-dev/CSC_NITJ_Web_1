@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import EditProfilePage from './pages/EditProfilePage';
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -59,6 +60,7 @@ function App() {
           path="/profile"
           element={<Profile onLogout={handleLogout} />}
         />
+        <Route path="/edit-profile" element={<EditProfilePage />} />
 
         {/* OTHER PAGES */}
         <Route path="/#education" element={<Education />} />
