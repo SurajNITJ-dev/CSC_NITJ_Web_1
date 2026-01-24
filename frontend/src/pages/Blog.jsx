@@ -56,7 +56,7 @@ const BlogCard = ({ blog }) => {
         </div>
 
         {blog.image && (
-          <div className="w-24 h-20 sm:w-36 sm:h-24 flex-shrink-0 rounded-lg overflow-hidden border border-slate-800">
+          <div className="w-24 h-20 sm:w-36 sm:h-24 shrink-0 rounded-lg overflow-hidden border border-slate-800">
             <img
               src={blog.image}
               alt={blog.title}

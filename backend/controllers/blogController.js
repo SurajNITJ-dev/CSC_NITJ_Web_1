@@ -59,18 +59,34 @@ export const likeBlog = async (req, res) => {
       return res.status(404).json({ message: "Blog not found" });
     }
 
-    if (!blog.likes.includes(req.user._id)) {
+    const userId = req.user._id.toString();
+
+    const alreadyLiked = blog.likes.some(
+      (id) => id.toString() === userId
+    );
+
+    if (alreadyLiked) {
+      // ❌ DISLIKE — remove user manually
+      blog.likes = blog.likes.filter(
+        (id) => id.toString() !== userId
+      );
+    } else {
+      // ❤️ LIKE
       blog.likes.push(req.user._id);
-      await blog.save();
     }
 
+    await blog.save();
+
+    // IMPORTANT: return updated blog
     res.json(blog);
   } catch (err) {
+    console.error("Like toggle error:", err.message);
     res.status(500).json({
-      message: "Failed to like blog",
+      message: "Failed to toggle like",
     });
   }
 };
+
 
 export const commentBlog = async (req, res) => {
   try {
@@ -90,6 +106,45 @@ export const commentBlog = async (req, res) => {
   } catch (err) {
     res.status(500).json({
       message: "Failed to add comment",
+    });
+  }
+};
+
+export const deleteComment = async (req, res) => {
+  try {
+    const { blogId, commentId } = req.params;
+    const userId = req.user._id.toString();
+
+    const blog = await Blog.findById(blogId);
+
+    if (!blog) {
+      return res.status(404).json({ message: "Blog not found" });
+    }
+
+    const comment = blog.comments.id(commentId);
+
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    // ✅ Allow delete if:
+    // 1. Comment author
+    // 2. Blog author
+    if (
+      comment.user.toString() !== userId &&
+      blog.author.toString() !== userId
+    ) {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    comment.remove();
+    await blog.save();
+
+    res.json(blog); // return updated blog
+  } catch (err) {
+    console.error("Delete comment error:", err.message);
+    res.status(500).json({
+      message: "Failed to delete comment",
     });
   }
 };
