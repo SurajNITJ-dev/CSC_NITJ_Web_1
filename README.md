@@ -18,3 +18,5 @@ Official website for the Cyber Security Club, NIT Jalandhar.
 - Simran Maurya
 - Sukhan Preet Singh
 - Samarth Chakrawarti
+
+Updated README for testing dev branch access

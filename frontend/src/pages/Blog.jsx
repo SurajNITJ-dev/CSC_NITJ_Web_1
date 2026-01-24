@@ -13,7 +13,16 @@ const BlogCard = ({ blog }) => {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       onClick={() => navigate(`/blog/${blog._id}`)}
-      className="group cursor-pointer border-b border-slate-800 pb-8 mb-8"
+      className="
+        group cursor-pointer
+        bg-slate-900/40
+        border border-slate-800
+        rounded-2xl
+        p-6
+        hover:border-cyan-400
+        transition
+      "
+
     >
       {/* AUTHOR */}
       <div className="flex items-center gap-2 mb-3">
@@ -65,7 +74,9 @@ export default function Blog() {
   const navigate = useNavigate();
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const [showWriter, setShowWriter] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState("All");
   const canvasRef = useRef(null);
   const mouseRef = useRef({ x: 0, y: 0 });
 
@@ -76,6 +87,7 @@ export default function Blog() {
           `${import.meta.env.VITE_API_BASE_URL}/api/blogs`
         );
         const data = await res.json();
+        console.log("Fetched blogs:", data);
         setBlogs(data);
       } catch (err) {
         console.error("Blog fetch failed");
@@ -154,8 +166,30 @@ export default function Blog() {
       animate();
     };
 
+
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
+
+      const categories = [
+      "All",
+      "Cybersecurity",
+      "Awareness",
+      "Ethical Hacking",
+      "AI & Tech",
+      ];
+
+      const filteredBlogs = blogs.filter((blog) => {
+      const matchesCategory =
+        activeCategory === "All" ||
+        blog.category?.toLowerCase() === activeCategory.toLowerCase();
+
+      const matchesSearch =
+        blog.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        blog.content?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        blog.author?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+
+      return matchesCategory && matchesSearch;
+      });
 
   return (
     <div className="bg-[#020617] min-h-screen text-slate-300">
@@ -166,10 +200,48 @@ export default function Blog() {
           className="max-w-full drop-shadow-[0_0_25px_rgba(34,211,238,0.35)]"
         />
       </section>
+      {/* SEARCH BAR */}
+      <div className="max-w-5xl mx-auto px-6 mt-10">
+        <input
+          type="text"
+          placeholder="Search by title, content, or author..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="
+            w-full p-4 rounded-xl
+            bg-slate-900 border border-slate-700
+            text-slate-200
+            focus:border-cyan-400 outline-none
+          "
+        />
+      </div>
+      
+      {/* CATEGORY FILTER */}
+    <div className="max-w-5xl mx-auto px-6 mt-6 flex flex-wrap gap-3">
+      {categories.map((cat) => (
+        <button
+          key={cat}
+          onClick={() => setActiveCategory(cat)}
+          className={`
+            px-4 py-2 rounded-full text-xs font-semibold
+            transition
+            ${
+              activeCategory === cat
+                ? "bg-cyan-500 text-black"
+                : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+            }
+          `}
+        >
+          {cat}
+        </button>
+      ))}
+    </div>
+
+
 
       {/* MAIN GRID */}
-      <main className="max-w-7xl mx-auto px-5 py-14 grid grid-cols-1 lg:grid-cols-12 gap-14">
-        
+      <main className="w-full px-10 py-14">
+
         {/* MOBILE START WRITING */}
         <div className="lg:hidden mb-10">
           <div className="bg-cyan-500/5 border border-cyan-500/20 p-6 rounded-2xl">
@@ -190,16 +262,21 @@ export default function Blog() {
         </div>
 
         {/* BLOG LIST */}
-        <div className="lg:col-span-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
           {loading ? (
-            <p className="text-slate-500">Loading blogs...</p>
+            <p className="text-slate-500 col-span-full">
+              Loading blogs...
+            </p>
           ) : (
-            blogs.map((blog) => <BlogCard key={blog._id} blog={blog} />)
+          filteredBlogs.map((blog) => (
+              <BlogCard key={blog._id} blog={blog} />
+            ))
           )}
         </div>
 
+
         {/* DESKTOP SIDEBAR */}
-        <aside className="hidden lg:block lg:col-span-4 sticky top-32 h-fit">
+        {/* <aside className="hidden lg:block lg:col-span-4 sticky top-32 h-fit">
           <div className="bg-cyan-500/5 border border-cyan-500/20 p-8 rounded-2xl">
             <h3 className="text-cyan-400 font-black text-xs uppercase tracking-widest mb-4">
               Start Writing
@@ -215,8 +292,65 @@ export default function Blog() {
             </button>
 
           </div>
-        </aside>
+        </aside> */}
       </main>
+      {/* FLOATING WRITE BUTTON + HOVER PANEL */}
+      <div
+        className="fixed bottom-8 right-8 z-50"
+        onMouseEnter={() => setShowWriter(true)}
+      >
+
+        {/* CIRCLE BUTTON */}
+        <button
+          className="
+            w-14 h-14 rounded-full
+            bg-cyan-500 text-black
+            font-black text-xl
+            shadow-[0_0_25px_rgba(34,211,238,0.6)]
+            hover:bg-cyan-400 transition
+          "
+        >
+          ✍️
+        </button>
+
+        {/* POPUP ASIDE (OLD SIDEBAR CONTENT) */}
+        {showWriter && (
+          <div
+            className="
+              absolute bottom-16 right-0
+              w-72
+              bg-[#020617]
+              border border-cyan-500/30
+              rounded-2xl p-6
+              shadow-[0_0_40px_rgba(34,211,238,0.35)]
+            "
+          >
+            <h3 className="text-cyan-400 font-black text-xs uppercase tracking-widest mb-3">
+              Start Writing
+            </h3>
+
+            <p className="text-sm text-slate-400 mb-5">
+              Share your cybersecurity knowledge with CSC NITJ.
+            </p>
+
+            <button
+              onClick={() => navigate("/create-blog")}
+              className="
+                w-full py-3
+                bg-cyan-500 text-black
+                font-black text-[10px]
+                uppercase tracking-[0.2em]
+                rounded-lg
+                hover:bg-cyan-400 transition
+              "
+            >
+              Start Writing
+            </button>
+          </div>
+        )}
+      </div>
+
     </div>
+     
   );
 }
