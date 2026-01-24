@@ -1,10 +1,12 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
 
 export default function CreateBlog() {
   const navigate = useNavigate();
 
+  // ================== STATE ==================
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("Cybersecurity");
@@ -13,14 +15,30 @@ export default function CreateBlog() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // simple reading stats (frontend only)
-  const words = content.trim().split(/\s+/).filter(Boolean).length;
+  // ================== TIPTAP EDITOR ==================
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        heading: { levels: [1, 2, 3] },
+      }),
+    ],
+    content: "",
+    onUpdate: ({ editor }) => {
+      setContent(editor.getHTML());
+    },
+  });
+
+  if (!editor) return null;
+
+  // ================== STATS ==================
+  const plainText = content.replace(/<[^>]*>/g, "");
+  const words = plainText.trim().split(/\s+/).filter(Boolean).length;
   const readTime = Math.max(1, Math.ceil(words / 200));
 
+  // ================== HANDLERS ==================
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
   };
@@ -28,6 +46,11 @@ export default function CreateBlog() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    if (editor.isEmpty) {
+      setError("Blog content cannot be empty");
+      return;
+    }
 
     const token = localStorage.getItem("token");
     if (!token) {
@@ -41,6 +64,7 @@ export default function CreateBlog() {
       const formData = new FormData();
       formData.append("title", title);
       formData.append("content", content);
+      formData.append("category", category);
       if (imageFile) formData.append("image", imageFile);
 
       const res = await fetch(
@@ -55,10 +79,7 @@ export default function CreateBlog() {
       );
 
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Failed to publish blog");
-      }
+      if (!res.ok) throw new Error(data.message || "Failed to publish blog");
 
       navigate("/blog");
     } catch (err) {
@@ -68,6 +89,7 @@ export default function CreateBlog() {
     }
   };
 
+  // ================== JSX ==================
   return (
     <div className="min-h-screen bg-[#020617] text-white px-4 sm:px-6 py-24">
       {/* HEADER */}
@@ -75,7 +97,7 @@ export default function CreateBlog() {
         <h1 className="text-4xl sm:text-5xl font-black tracking-tight">
           Create <span className="text-cyan-400">Blog</span>
         </h1>
-        <p className="text-gray-400 mt-3 max-w-xl text-sm sm:text-base">
+        <p className="text-gray-400 mt-3 max-w-xl">
           Share your cybersecurity insights with the CSC community.
         </p>
       </div>
@@ -83,10 +105,8 @@ export default function CreateBlog() {
       {/* GRID */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* LEFT — EDITOR */}
-        <motion.form
+        <form
           onSubmit={handleSubmit}
-          initial={{ opacity: 0, x: -30 }}
-          animate={{ opacity: 1, x: 0 }}
           className="
             bg-black/40 backdrop-blur-xl
             border border-cyan-500/20
@@ -109,12 +129,7 @@ export default function CreateBlog() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter a powerful title..."
-              className="
-                w-full mt-2 p-4 rounded-lg
-                bg-black/50 border border-white/10
-                text-white
-                focus:border-cyan-400 outline-none
-              "
+              className="w-full mt-2 p-4 rounded-lg bg-black/50 border border-white/10"
               required
             />
           </div>
@@ -127,12 +142,7 @@ export default function CreateBlog() {
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="
-                w-full mt-2 p-4 rounded-lg
-                bg-black/50 border border-white/10
-                text-white
-                focus:border-cyan-400 outline-none
-              "
+              className="w-full mt-2 p-4 rounded-lg bg-black/50 border border-white/10"
             >
               <option>Cybersecurity</option>
               <option>Awareness</option>
@@ -141,7 +151,7 @@ export default function CreateBlog() {
             </select>
           </div>
 
-          {/* IMAGE */}
+          {/* IMAGE UPLOAD */}
           <div>
             <label className="text-[11px] uppercase tracking-widest text-gray-400">
               Cover Image (optional)
@@ -153,12 +163,8 @@ export default function CreateBlog() {
               rounded-xl p-6 cursor-pointer
               hover:border-cyan-400 transition
             ">
-              <span className="text-sm text-gray-400">
-                Click to upload image
-              </span>
-              <span className="text-[10px] text-gray-500 mt-1">
-                JPG / PNG
-              </span>
+              <span className="text-sm text-gray-400">Click to upload image</span>
+              <span className="text-[10px] text-gray-500 mt-1">JPG / PNG</span>
 
               <input
                 type="file"
@@ -167,19 +173,6 @@ export default function CreateBlog() {
                 className="hidden"
               />
             </label>
-
-            {imagePreview && (
-              <button
-                type="button"
-                onClick={() => {
-                  setImageFile(null);
-                  setImagePreview(null);
-                }}
-                className="mt-2 text-xs text-red-400 hover:underline"
-              >
-                Remove image
-              </button>
-            )}
           </div>
 
           {/* CONTENT */}
@@ -187,19 +180,146 @@ export default function CreateBlog() {
             <label className="text-[11px] uppercase tracking-widest text-gray-400">
               Content
             </label>
-            <textarea
-              rows="9"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Write your blog here..."
-              className="
-                w-full mt-2 p-4 rounded-lg
-                bg-black/50 border border-white/10
-                text-white leading-relaxed
-                focus:border-cyan-400 outline-none
-              "
-              required
-            />
+
+            <div className="mt-2 bg-black/50 border border-white/10 rounded-lg overflow-hidden">
+              {/* TOOLBAR */}
+              <div className="flex gap-2 p-2 border-b border-white/10 text-cyan-400 text-sm">
+                <button
+                  type="button"
+                  onClick={() => editor.chain().focus().toggleBold().run()}
+                  className={`px-2 py-1 rounded ${
+                    editor.isActive("bold")
+                      ? "bg-cyan-400 text-black"
+                      : "text-cyan-400 hover:bg-white/10"
+                  }`}
+                >
+                  B
+               </button>
+               <button
+                  type="button"
+                  onClick={() => editor.chain().focus().toggleItalic().run()}
+                  className={`px-2 py-1 rounded ${
+                    editor.isActive("italic")
+                      ? "bg-cyan-400 text-black"
+                      : "text-cyan-400 hover:bg-white/10"
+                  }`}
+                >
+                  I
+                </button>
+                <button
+                  type="button"
+                  onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+                  className={`px-2 py-1 rounded ${
+                    editor.isActive("heading", { level: 1 })
+                      ? "bg-cyan-400 text-black"
+                      : "text-cyan-400 hover:bg-white/10"
+                  }`}
+                >
+                  H1
+                </button>
+                <button
+                  type="button"
+                  onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+                  className={`px-2 py-1 rounded ${
+                    editor.isActive("heading", { level: 2 })
+                      ? "bg-cyan-400 text-black"
+                      : "text-cyan-400 hover:bg-white/10"
+                  }`}
+                >
+                  H2
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+                  className={`px-2 py-1 rounded ${
+                    editor.isActive("heading", { level: 3 })
+                      ? "bg-cyan-400 text-black"
+                      : "text-cyan-400 hover:bg-white/10"
+                  }`}
+                >
+                  H3
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => editor.chain().focus().toggleBulletList().run()}
+                  className={`px-2 py-1 rounded ${
+                    editor.isActive("bulletList")
+                      ? "bg-cyan-400 text-black"
+                      : "text-cyan-400 hover:bg-white/10"
+                  }`}
+                >
+                  •
+                </button>
+
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                className={`px-2 py-1 rounded ${
+                  editor.isActive("orderedList")
+                    ? "bg-cyan-400 text-black"
+                    : "text-cyan-400 hover:bg-white/10"
+                }`}
+              >
+                1.
+              </button>
+
+               <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleCode().run()}
+                className={`px-2 py-1 rounded ${
+                  editor.isActive("code")
+                    ? "bg-cyan-400 text-black"
+                    : "text-cyan-400 hover:bg-white/10"
+                }`}
+              >
+                {"</>"}
+                <button
+                  type="button"
+                  onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+                  className={`px-2 py-1 rounded ${
+                    editor.isActive("codeBlock")
+                      ? "bg-cyan-400 text-black"
+                      : "text-cyan-400 hover:bg-white/10"
+                  }`}
+                >
+                  {"{ }"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => editor.chain().focus().toggleBlockquote().run()}
+                  className={`px-2 py-1 rounded ${
+                    editor.isActive("blockquote")
+                      ? "bg-cyan-400 text-black"
+                      : "text-cyan-400 hover:bg-white/10"
+                  }`}
+                >
+                  ❝
+                </button>
+                <button
+                  type="button"
+                  onClick={() => editor.chain().focus().undo().run()}
+                  className="px-2 py-1 rounded text-cyan-400 hover:bg-white/10"
+                >
+                  ↶
+                </button>
+                <button
+                  type="button"
+                  onClick={() => editor.chain().focus().redo().run()}
+                  className="px-2 py-1 rounded text-cyan-400 hover:bg-white/10"
+                >
+                  ↷
+                </button>
+
+              </button>
+              </div>
+
+              <EditorContent
+                editor={editor}
+                className="min-h-[220px] p-4 text-white cursor-text focus:outline-none"
+              />
+            </div>
           </div>
 
           {/* STATS */}
@@ -208,83 +328,46 @@ export default function CreateBlog() {
             <span>Reading Time: {readTime} min</span>
           </div>
 
-          {error && (
-            <p className="text-red-400 text-xs font-semibold">
-              ⚠️ {error}
-            </p>
-          )}
+          {error && <p className="text-red-400 text-sm">{error}</p>}
 
-          {/* ACTION */}
           <button
             type="submit"
             disabled={loading}
-            className="
-              w-full py-4 rounded-lg
-              bg-cyan-500 text-black
-              font-black uppercase text-xs tracking-[0.25em]
-              hover:bg-cyan-400
-              disabled:opacity-60
-              shadow-[0_0_25px_rgba(34,211,238,0.5)]
-              transition
-            "
+            className="w-full py-4 rounded-lg bg-cyan-500 text-black font-black uppercase text-xs tracking-widest hover:bg-cyan-400 disabled:opacity-60"
           >
             {loading ? "Publishing..." : "Publish Blog"}
           </button>
-        </motion.form>
+        </form>
 
         {/* RIGHT — PREVIEW */}
-        <motion.div
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="
-            bg-black/30 backdrop-blur-xl
-            border border-white/10
-            rounded-2xl p-6 sm:p-8
-            shadow-[0_0_30px_rgba(0,0,0,0.4)]
-          "
-        >
-          <h2 className="text-lg font-black uppercase tracking-widest text-gray-300 mb-6">
-            Live Preview
-          </h2>
-
+        <div className="bg-black/30 backdrop-blur-xl border border-white/10 rounded-2xl p-6 sm:p-8">
           {imagePreview && (
             <img
               src={imagePreview}
               alt="Preview"
-              className="
-                w-full h-44 sm:h-56 object-cover
-                rounded-xl mb-6
-                border border-cyan-500/20
-              "
+              className="w-full h-44 sm:h-56 object-cover rounded-xl mb-6"
             />
           )}
 
-          {title || content ? (
-            <>
-              <span className="text-[10px] uppercase tracking-widest text-cyan-400">
-                {category}
-              </span>
+          {/* PREVIEW CATEGORY */}
+          <span className="text-[10px] uppercase tracking-widest text-cyan-400">
+            {category}
+          </span>
 
-              <h3 className="text-2xl sm:text-3xl font-black mt-3 mb-4">
-                {title || "Blog Title"}
-              </h3>
+          {/* PREVIEW TITLE (THIS WAS MISSING) */}
+          <h3 className="text-2xl sm:text-3xl font-black mt-3 mb-4">
+            {title || "Blog Title"}
+          </h3>
 
-              <p className="text-gray-400 whitespace-pre-line leading-relaxed text-sm sm:text-base">
-                {content || "Your blog content will appear here..."}
-              </p>
-            </>
-          ) : (
-            <p className="text-gray-500 text-sm">
-              Start typing to see live preview
-            </p>
-          )}
-        </motion.div>
+          {/* PREVIEW CONTENT */}
+          <div
+            className="text-gray-400 leading-relaxed text-sm sm:text-base"
+            dangerouslySetInnerHTML={{
+              __html: content || "<p>Your blog content will appear here...</p>",
+            }}
+          />
+        </div>
       </div>
-
-      {/* FOOTER */}
-      <p className="text-center text-xs text-gray-500 mt-20 tracking-wide">
-        🛡️ Write responsibly • Educate ethically • CSC NITJ
-      </p>
     </div>
   );
 }

@@ -1,1 +1,37 @@
 @import "tailwindcss";
+/* TipTap editor base styles */
+.ProseMirror {
+  min-height: 200px;
+  outline: none;
+  white-space: pre-wrap;
+}
+
+.ProseMirror p {
+  margin: 0.5rem 0;
+}
+
+.ProseMirror ul {
+  padding-left: 1.25rem;
+  list-style: disc;
+}
+
+.ProseMirror ol {
+  padding-left: 1.25rem;
+  list-style: decimal;
+}
+
+.ProseMirror h1 {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.ProseMirror h2 {
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.ProseMirror code {
+  background: rgba(255,255,255,0.08);
+  padding: 2px 4px;
+  border-radius: 4px;
+}
