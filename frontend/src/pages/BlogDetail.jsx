@@ -45,30 +45,36 @@ export default function BlogDetail() {
   }, []);
 
   /* ================= LIKE BLOG ================= */
-  const handleLike = async () => {
-    if (!token) {
-      alert("Please login to like this blog");
-      return;
-    }
+const handleLike = async () => {
+  if (!token) {
+    alert("Please login to like this blog");
+    return;
+  }
 
-    try {
-      setActionLoading(true);
-      await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/blogs/${slug}/like`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      fetchBlog(); // refresh
-    } catch (err) {
-      console.error("Like failed");
-    } finally {
-      setActionLoading(false);
-    }
-  };
+  try {
+    setActionLoading(true);
+
+    const res = await fetch(
+      `${import.meta.env.VITE_API_BASE_URL}/api/blogs/${slug}/like`,
+      {
+        method: "POST", // ✅ MUST BE POST
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const updatedBlog = await res.json();
+
+    // ✅ Update UI with backend response
+    setBlog(updatedBlog);
+  } catch (err) {
+    console.error("Like failed");
+  } finally {
+    setActionLoading(false);
+  }
+};
+
 
   /* ================= ADD COMMENT ================= */
   const handleComment = async (e) => {
@@ -103,6 +109,32 @@ export default function BlogDetail() {
       setActionLoading(false);
     }
   };
+  const handleDeleteComment = async (commentId) => {
+  if (!token) return;
+
+  try {
+    setActionLoading(true);
+
+    const res = await fetch(
+      `${import.meta.env.VITE_API_BASE_URL}/api/blogs/${slug}/comment/${commentId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const updatedBlog = await res.json();
+
+    // update UI instantly
+    setBlog(updatedBlog);
+  } catch (err) {
+    console.error("Delete comment failed");
+  } finally {
+    setActionLoading(false);
+  }
+};
 
   /* ================= STATES ================= */
   if (loading) {
@@ -120,6 +152,19 @@ export default function BlogDetail() {
       </div>
     );
   }
+
+  let userId = null;
+  if (token) {
+    try {
+      userId = JSON.parse(atob(token.split(".")[1])).id;
+    } catch (e) {
+      userId = null;
+    }
+  }
+
+  const isLiked =
+    userId && blog?.likes?.some((id) => id.toString() === userId);
+
 
   return (
     <div className="bg-[#020617] text-slate-200 min-h-screen relative">
@@ -156,10 +201,18 @@ export default function BlogDetail() {
             <button
               onClick={handleLike}
               disabled={actionLoading}
-              className="flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition"
+              className={`flex items-center gap-2 transition cursor-pointer
+                ${
+                  isLiked
+                    ? "text-red-400 hover:text-red-300"
+                    : "text-cyan-400 hover:text-cyan-300"
+                }
+                ${actionLoading ? "opacity-50 cursor-not-allowed" : ""}
+              `}
             >
-              ♥ {blog.likes?.length || 0}
+              {isLiked ? "♥" : "♡"} {blog.likes?.length || 0}
             </button>
+
           </div>
         </div>
       </section>
@@ -245,29 +298,52 @@ export default function BlogDetail() {
 
         {/* COMMENT LIST */}
         <div className="space-y-6">
-          {blog.comments?.map((c) => (
+        {blog.comments?.map((c) => {
+          const canDelete =
+              userId &&
+              (
+                c.user?._id?.toString() === userId ||
+                blog.author?._id?.toString() === userId
+              );
+
+          return (
             <div
               key={c._id}
               className="bg-slate-900/60 border border-slate-800 rounded-xl p-5"
             >
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-8 h-8 bg-cyan-500 rounded-full flex items-center justify-center text-black font-bold text-sm">
-                  {c.user?.name?.[0] || "U"}
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-cyan-500 rounded-full flex items-center justify-center text-black font-bold text-sm">
+                    {c.user?.name?.[0] || "U"}
+                  </div>
+                  <div>
+                    <p className="text-white font-semibold text-sm">
+                      {c.user?.name || "CSC Member"}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {new Date(c.createdAt).toLocaleString()}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-white font-semibold text-sm">
-                    {c.user?.name || "CSC Member"}
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    {new Date(c.createdAt).toLocaleString()}
-                  </p>
-                </div>
+
+                {/* DELETE BUTTON */}
+                {canDelete && (
+                  <button
+                    onClick={() => handleDeleteComment(c._id)}
+                    disabled={actionLoading}
+                    className="text-red-400 text-xs hover:text-red-300 cursor-pointer"
+                  >
+                    Delete
+                  </button>
+                )}
               </div>
 
               <p className="text-slate-300 text-sm">{c.text}</p>
             </div>
-          ))}
-        </div>
+          );
+        })}
+      </div>
+
       </section>
 
       <footer className="text-center py-12 text-xs text-slate-500 uppercase tracking-widest">

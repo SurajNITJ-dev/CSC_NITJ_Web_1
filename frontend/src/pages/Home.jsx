@@ -274,7 +274,7 @@ const Home = () => {
             <p className="text-[10px] md:text-sm text-cyan-100 font-bold uppercase tracking-[0.2em] mt-4 opacity-80">Building Cyber Awareness & Ethical Hacking Skills</p>
             <div className="h-32"></div>
             <MagneticButton 
-              onClick={() => window.location.hash = "#about"} 
+              onClick={() => window.location.hash = "#About"} 
               className="cyber-button-tech px-8 py-3 uppercase text-[11px] tracking-[0.3em]"
             >
               Learn More
