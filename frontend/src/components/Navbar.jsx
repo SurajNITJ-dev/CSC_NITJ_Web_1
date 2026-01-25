@@ -34,12 +34,13 @@ export default function Navbar({ isLoggedIn }) {
             CSC<span className="text-cyan-400">NITJ</span>
           </Link>
 
-          {/* 3. Desktop menu - Hidden in mobile */}
-          <div className="hidden md:flex items-center gap-8 text-xs font-bold uppercase tracking-widest md:order-2">
-            <Link to="/" className={isActive("/")}>Home</Link>
-            <Link to="/about" className={isActive("/about")}>About</Link>
-            <Link to="/team" className={isActive("/team")}>Team</Link>
-            <Link to="/blog" className={isActive("/blog")}>Blog</Link>
+        {/* Desktop menu */}
+        <div className="hidden md:flex items-center gap-8 text-xs font-bold uppercase tracking-widest">
+          <Link to="/" className={isActive("/")}>Home</Link>
+          <Link to="/about" className={isActive("/about")}>About</Link>
+          <Link to="/events" className={isActive("/events")}>Events</Link>
+          <Link to="/team" className={isActive("/team")}>Team</Link>
+          <Link to="/blog" className={isActive("/blog")}>Blog</Link>
 
             {!isLoggedIn ? (
               <Link
@@ -84,12 +85,46 @@ export default function Navbar({ isLoggedIn }) {
             open ? "translate-x-0" : "-translate-x-full"
           } md:hidden`}
         >
-          <div className="flex flex-col gap-8 p-10 mt-20 text-sm font-bold uppercase tracking-[0.2em]">
-            <Link to="/" className={isActive("/")}>Home</Link>
-            <Link to="/about" className={isActive("/about")}>About</Link>
-            <Link to="/team" className={isActive("/team")}>Team</Link>
-            <Link to="/blog" className={isActive("/blog")}>Blog</Link>
-          </div>
+          ☰
+        </button>
+      </div>
+
+      {/* Mobile menu */}
+      {open && (
+        <div className="md:hidden mt-6 flex flex-col gap-6 text-xs font-bold uppercase tracking-widest">
+          <Link to="/" onClick={() => setOpen(false)} className={isActive("/")}>
+            Home
+          </Link>
+          <Link to="/about" onClick={() => setOpen(false)} className={isActive("/about")}>
+            About
+          </Link>
+          <Link to="/events" onClick={() => setOpen(false)} className={isActive("/events")}>
+            Events
+          </Link>
+          <Link to="/team" onClick={() => setOpen(false)} className={isActive("/team")}>
+            Team
+          </Link>
+          <Link to="/blog" onClick={() => setOpen(false)} className={isActive("/blog")}>
+            Blog
+          </Link>
+
+          {!isLoggedIn ? (
+            <Link
+              to="/login"
+              onClick={() => setOpen(false)}
+              className="inline-block w-fit px-4 py-2 border border-cyan-500 text-cyan-400 rounded hover:bg-cyan-500 hover:text-black transition"
+            >
+              Sign In
+            </Link>
+          ) : (
+            <Link
+              to="/profile"
+              onClick={() => setOpen(false)}
+              className="w-9 h-9 rounded-full border border-cyan-500 flex items-center justify-center text-cyan-400"
+            >
+              👤
+            </Link>
+          )}
         </div>
 
         {/* Overlay Backdrop */}
