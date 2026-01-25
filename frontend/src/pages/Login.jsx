@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
-function Login() {
+function Login(props) {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
@@ -9,40 +9,48 @@ function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e) => {
+const handleLogin = async (e) => {
   e.preventDefault();
   setError("");
+  setLoading(true);
 
   try {
-    const res = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL}/api/auth/login`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      }
-    );
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
 
-    const text = await res.text();
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Login failed");
 
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch {
-      throw new Error("Server did not return valid JSON");
-    }
+    // ✅ 1. Get the role (it's at the root level based on your JSON snippet)
+    const userRole = data.role || "user"; 
 
-    if (!res.ok) {
-      throw new Error(data.message || "Login failed");
-    }
+    // ✅ 2. Construct the FULL user object including the role
+    const fullUserData = {
+      _id: data._id,
+      name: data.name,
+      email: data.email,
+      role: userRole, // 👈 This MUST be here
+      token: data.token
+    };
 
+    // ✅ 3. Save to Local Storage
     localStorage.setItem("token", data.token);
-    localStorage.setItem("userName", data.name);
-    localStorage.setItem("userEmail", data.email);
+    localStorage.setItem("role", userRole); 
+    localStorage.setItem("user", JSON.stringify(fullUserData)); 
 
-    navigate("/");
+    // ✅ 4. Update App State
+    if (props.onLogin) props.onLogin(fullUserData);
+
+    // ✅ 5. Navigate
+    navigate(userRole === "admin" ? "/admin" : "/profile");
+
   } catch (err) {
     setError(err.message);
+  } finally {
+    setLoading(false);
   }
 };
 

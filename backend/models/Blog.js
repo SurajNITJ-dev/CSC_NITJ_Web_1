@@ -19,6 +19,12 @@ const blogSchema = new mongoose.Schema(
       required: true,
     },
 
+   status: {
+  type: String,
+  enum: ["pending", "approved", "rejected"],
+  default: "pending", 
+},
+
     likes: [
       {
         type: mongoose.Schema.Types.ObjectId,

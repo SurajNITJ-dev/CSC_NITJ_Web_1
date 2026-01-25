@@ -7,6 +7,7 @@ import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import blogRoutes from "./routes/blogRoutes.js";
+import eventRoutes from "./routes/eventRoutes.js";
 import { errorHandler } from "./middleware/errorMiddleware.js";
 
 connectDB();
@@ -27,6 +28,7 @@ app.use(
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/blogs", blogRoutes);
+app.use("/api/events", eventRoutes);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;

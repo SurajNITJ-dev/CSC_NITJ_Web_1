@@ -22,17 +22,57 @@ export const createBlog = async (req, res) => {
 
 export const getBlogs = async (req, res) => {
   try {
-    const blogs = await Blog.find()
+    // ONLY FETCH APPROVED BLOGS FOR THE PUBLIC
+    const blogs = await Blog.find({ status: "approved" }) 
       .populate("author", "name")
       .sort({ createdAt: -1 });
 
     res.json(blogs);
   } catch (err) {
-    res.status(500).json({
-      message: "Failed to fetch blogs",
-    });
+    res.status(500).json({ message: "Failed to fetch blogs" });
   }
 };
+
+export const moderateBlog = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body; // status will be 'approved' or 'rejected'
+
+    // Validate that the status is one of our allowed values
+    if (!['approved', 'rejected'].includes(status)) {
+      return res.status(400).json({ message: "Invalid status update" });
+    }
+
+    const blog = await Blog.findByIdAndUpdate(
+      id,
+      { status: status },
+      { new: true }
+    );
+
+    if (!blog) {
+      return res.status(404).json({ message: "Blog not found" });
+    }
+
+    res.json({ message: `Blog ${status} successfully`, blog });
+  } catch (err) {
+    res.status(500).json({ message: "Moderation failed" });
+  }
+};
+
+
+export const getPendingBlogs = async (req, res) => {
+  try {
+    // Fetch only pending blogs for the Admin panel
+    const blogs = await Blog.find({ status: "pending" })
+      .populate("author", "name")
+      .sort({ createdAt: -1 });
+
+    res.json(blogs);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch pending blogs" });
+  }
+};
+
 
 export const getBlogById = async (req, res) => {
   try {
