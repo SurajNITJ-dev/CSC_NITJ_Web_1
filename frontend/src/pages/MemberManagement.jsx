@@ -9,7 +9,7 @@ export default function MemberManagement() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/users", {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -26,7 +26,7 @@ export default function MemberManagement() {
   // Handle Database Updates (Promote, Demote, Suspend, Activate)
   const handleUpdate = async (id, updateData) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/users/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

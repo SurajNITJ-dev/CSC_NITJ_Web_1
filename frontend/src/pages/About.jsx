@@ -1,76 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-
-// --- NEURAL NETWORK BACKGROUND (Unchanged) ---
-const NeuralNetwork = () => {
-  const canvasRef = useRef(null);
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let particles = [];
-    let animationFrameId;
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      init();
-    };
-    class Particle {
-      constructor(x, y) {
-        this.x = x; this.y = y;
-        this.vx = (Math.random() - 0.5) * 0.25;
-        this.vy = (Math.random() - 0.5) * 0.25;
-        this.radius = 2;
-      }
-      update() {
-        this.x += this.vx; this.y += this.vy;
-        if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-        if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
-      }
-      draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = '#22d3ee';
-        ctx.fill();
-      }
-    }
-    const init = () => {
-      particles = [];
-      const count = Math.floor((canvas.width * canvas.height) / 18000);
-      for (let i = 0; i < count; i++) {
-        particles.push(new Particle(Math.random() * canvas.width, Math.random() * canvas.height));
-      }
-    };
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.globalCompositeOperation = 'lighter';
-      for (let i = 0; i < particles.length; i++) {
-        const p1 = particles[i]; p1.update();
-        ctx.shadowBlur = 15; ctx.shadowColor = '#22d3ee';
-        p1.draw();
-        for (let j = i + 1; j < particles.length; j++) {
-          const p2 = particles[j];
-          const dx = p1.x - p2.x; const dy = p1.y - p2.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 220) {
-            ctx.shadowBlur = 0; ctx.beginPath();
-            ctx.strokeStyle = `rgba(34, 211, 238, ${0.7 * (1 - dist / 220)})`;
-            ctx.lineWidth = 1.2; ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
-          }
-        }
-      }
-      ctx.globalCompositeOperation = 'source-over';
-      animationFrameId = requestAnimationFrame(animate);
-    };
-    window.addEventListener('resize', resize);
-    resize(); animate();
-    return () => {
-      window.removeEventListener('resize', resize);
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, []);
-  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{ zIndex: 0 }} />;
-};
+import { motion, AnimatePresence } from 'framer-motion';
+import urvashiMam from '../assets/urvashi_mam.png';
+import NeuralNetwork from '../components/NeuralNetwork';
 
 // --- REUSABLE CARD COMPONENT (Updated with Prefix prop) ---
 const GoalCard = ({ id, title, desc, active, path, prefix = "SEC" }) => {
@@ -149,6 +81,7 @@ const AboutPage = () => {
 
   const [activeCycle, setActiveCycle] = useState(0);
   const [heroScanning, setHeroScanning] = useState(false);
+  const [isCoordinatorExpanded, setIsCoordinatorExpanded] = useState(false);
 
   // --- 1. GOALS STATE ---
   const [goalsHeaderVisible, setGoalsHeaderVisible] = useState(false);
@@ -251,7 +184,7 @@ const AboutPage = () => {
       {/* 1. HERO SECTION */}
       <section className="relative z-10 pt-48 pb-20 px-6 flex flex-col items-center justify-center">
         <div
-          className={`relative max-w-4xl w-full bg-[#0a1628]/70 backdrop-blur-3xl border border-white/10 p-12 md:p-20 rounded-[3rem] shadow-2xl transition-all duration-500 ease-in-out ${heroScanning ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+          className={`relative max-w-4xl w-full bg-[#0a1628]/70 backdrop-blur-3xl border border-white/10 p-12 md:p-20 rounded-[3rem] shadow-2xl transition-all duration-500 ease-in-out overflow-hidden ${heroScanning ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
             }`}
         >
           <div className="absolute top-0 left-0 w-full h-1 bg-white/5 rounded-t-[3rem] overflow-hidden">
@@ -288,6 +221,136 @@ const AboutPage = () => {
               <div className="h-[1px] w-12 bg-current opacity-20" />
               {heroScanning ? "Protocol Engaged" : "Syncing Core"}
               <div className="h-[1px] w-12 bg-current opacity-20" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 1.5. FACULTY COORDINATOR MESSAGE SECTION */}
+      <section className="relative z-10 py-16 px-6 max-w-5xl mx-auto">
+        <div className="flex flex-col items-center mb-12 text-center">
+          <span className="text-[10px] text-cyan-500 font-mono uppercase tracking-[0.3em] mb-3 inline-block">
+            Administration / Guidance //
+          </span>
+          <h2 className="text-3xl md:text-4xl font-black uppercase tracking-[0.2em] text-white/90">
+            Coordinator's <span className="text-cyan-500 drop-shadow-[0_0_15px_rgba(34,211,238,0.4)]">Message</span>
+          </h2>
+          <div className="h-[2px] w-36 bg-gradient-to-r from-transparent via-cyan-500 to-transparent mt-4" />
+        </div>
+
+        <div className="relative">
+          {/* Cyber outer border glow */}
+          <div className="absolute -inset-[1px] bg-gradient-to-b from-cyan-500/20 via-transparent to-cyan-500/10 rounded-[2rem] opacity-40 blur-[2px]" />
+          
+          {/* Main Card */}
+          <div className="relative bg-[#070f1e]/80 backdrop-blur-3xl border border-white/5 p-8 md:p-10 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.6)] overflow-hidden transition-all duration-500">
+            
+            {/* Cyber Corner HUD brackets */}
+            <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-cyan-500/40 rounded-tl-[2rem] pointer-events-none" />
+            <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-cyan-500/40 rounded-tr-[2rem] pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-cyan-500/40 rounded-bl-[2rem] pointer-events-none" />
+            <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-cyan-500/40 rounded-br-[2rem] pointer-events-none" />
+            
+            {/* Top aesthetic glow line */}
+            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent" />
+
+            {/* Left side accent glow line */}
+            <div className="absolute top-8 left-0 bottom-8 w-[3px] bg-gradient-to-b from-cyan-500 via-blue-500 to-transparent rounded-r" />
+
+            {/* Quote Icon watermark */}
+            <div className="absolute -top-6 -right-6 text-cyan-500/5 select-none font-sans text-[14rem] leading-none pointer-events-none font-black">
+              ”
+            </div>
+
+            <div className="flex flex-col text-slate-300 text-sm md:text-base leading-relaxed font-light">
+              
+              <h3 className="text-xl md:text-2xl font-black text-white tracking-tight uppercase border-b border-white/5 pb-4 mb-5 flex items-center gap-2.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.6)]" />
+                Message from the Faculty Coordinator
+              </h3>
+
+              <p className="font-semibold text-slate-200 mb-4">
+                Welcome to the Cyber Security Club (CSC), Department of Computer Science and Engineering, Dr. B. R. Ambedkar National Institute of Technology Jalandhar.
+              </p>
+
+              <p className="mb-4">
+                The digital world offers limitless opportunities, but it also brings evolving cybersecurity challenges that demand skilled, ethical, and innovative professionals. The Cyber Security Club serves as a platform where students can strengthen their technical expertise, explore emerging security technologies, and develop practical problem-solving skills beyond the classroom.
+              </p>
+
+              <AnimatePresence initial={false}>
+                {isCoordinatorExpanded && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.5, ease: "easeInOut" }}
+                    className="overflow-hidden flex flex-col gap-4"
+                  >
+                    <p>
+                      Our vision is to create an engaging learning environment through workshops, hands-on training sessions, Capture The Flag (CTF) competitions, hackathons, expert lectures, research discussions, and industry interactions. These activities are designed to encourage curiosity, teamwork, innovation, and responsible cybersecurity practices while preparing students for academic research, competitive examinations, and professional careers.
+                    </p>
+
+                    <p>
+                      I encourage every student to actively participate, collaborate with fellow enthusiasts, and make the most of the opportunities offered by the club. Together, we can build a vibrant cybersecurity community that contributes to a safer and more secure digital ecosystem.
+                    </p>
+
+                    <p>
+                      I appreciate the dedication and enthusiasm of our student members and executive team in making this initiative successful. I look forward to witnessing the club grow into a center of excellence for cybersecurity learning, innovation, and leadership.
+                    </p>
+
+                    <p>
+                      Wishing the Cyber Security Club continued success in all its endeavors.
+                    </p>
+
+                    {/* Signature block with Photo */}
+                    <div className="border-t border-white/5 pt-6 mt-4 flex justify-between items-center flex-wrap gap-6">
+                      <div className="flex items-center gap-4">
+                        <div className="relative flex-shrink-0 group">
+                          {/* Photo glow border ring */}
+                          <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full blur-[4px] opacity-40 group-hover:opacity-85 transition-opacity duration-300" />
+                          <img 
+                            src={urvashiMam} 
+                            alt="Dr. Urvashi Bansal" 
+                            className="relative w-16 h-16 md:w-20 md:h-20 rounded-full border border-cyan-400/40 object-cover shadow-[0_0_15px_rgba(0,209,255,0.15)]"
+                          />
+                        </div>
+                        <div className="flex flex-col font-mono text-[11px] text-slate-400">
+                          <span className="text-white text-base font-bold italic tracking-wide font-sans mb-0.5">Dr. Urvashi Bansal</span>
+                          <span className="text-cyan-400 font-bold tracking-wider mb-0.5 text-xs">Faculty Coordinator, Cyber Security Club</span>
+                          <span>Assistant Professor</span>
+                          <span>Department of Computer Science & Engineering</span>
+                          <span>Dr. B. R. Ambedkar National Institute of Technology Jalandhar</span>
+                        </div>
+                      </div>
+                      
+                      <div className="text-[10px] text-slate-500 font-mono tracking-widest bg-cyan-500/5 border border-cyan-500/10 px-3 py-1.5 rounded uppercase">
+                        protocol // csc_exec_coord
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Read More / Read Less trigger CTA */}
+              <div className="mt-4 flex justify-center">
+                <button
+                  onClick={() => setIsCoordinatorExpanded(!isCoordinatorExpanded)}
+                  className="group relative px-6 py-2.5 bg-cyan-500/5 hover:bg-cyan-500/15 border border-cyan-400/20 hover:border-cyan-400/50 text-cyan-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-lg transition-all duration-300 cursor-pointer hover:shadow-[0_0_15px_rgba(0,209,255,0.15)] flex items-center gap-2"
+                >
+                  <span>{isCoordinatorExpanded ? "Read Less" : "Read More"}</span>
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    className={`w-3.5 h-3.5 transition-transform duration-300 ${isCoordinatorExpanded ? 'rotate-180' : ''}`}
+                    fill="none" 
+                    viewBox="0 0 24 24" 
+                    stroke="currentColor" 
+                    strokeWidth={2}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+              </div>
+
             </div>
           </div>
         </div>

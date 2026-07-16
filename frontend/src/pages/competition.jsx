@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // --- NEURAL NETWORK BACKGROUND (Unchanged) ---
 const NeuralNetwork = () => {
@@ -72,6 +73,7 @@ const NeuralNetwork = () => {
 };
 
 const CompetitionsPage = () => {
+  const navigate = useNavigate();
   const [globalIdx, setGlobalIdx] = useState(0);
   const [internalIdx, setInternalIdx] = useState(0);
   const [isFadingGlobal, setIsFadingGlobal] = useState(false);
@@ -129,17 +131,7 @@ const CompetitionsPage = () => {
 
   const handleReturn = (e) => {
     e.preventDefault();
-    window.location.hash = '#about';
-    
-    setTimeout(() => {
-      // Targets the specific grid ID on your hub/about page
-      const target = document.getElementById('about-grid') || 
-                     document.getElementById('about');
-                     
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }, 100);
+    navigate('/');
   };
 
   return (

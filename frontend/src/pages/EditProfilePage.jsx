@@ -1,76 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from "react-router-dom";
-
-// --- 1. NEURAL NETWORK BACKGROUND (Unchanged) ---
-const NeuralNetwork = () => {
-  const canvasRef = useRef(null);
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let particles = [];
-    let animationFrameId;
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      init();
-    };
-    class Particle {
-      constructor(x, y) {
-        this.x = x; this.y = y;
-        this.vx = (Math.random() - 0.5) * 0.25; 
-        this.vy = (Math.random() - 0.5) * 0.25;
-        this.radius = 2;
-      }
-      update() {
-        this.x += this.vx; this.y += this.vy;
-        if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-        if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
-      }
-      draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = '#22d3ee';
-        ctx.fill();
-      }
-    }
-    const init = () => {
-      particles = [];
-      const count = Math.floor((canvas.width * canvas.height) / 18000);
-      for (let i = 0; i < count; i++) {
-        particles.push(new Particle(Math.random() * canvas.width, Math.random() * canvas.height));
-      }
-    };
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.globalCompositeOperation = 'lighter';
-      for (let i = 0; i < particles.length; i++) {
-        const p1 = particles[i]; p1.update();
-        ctx.shadowBlur = 15; ctx.shadowColor = '#22d3ee';
-        p1.draw();
-        for (let j = i + 1; j < particles.length; j++) {
-          const p2 = particles[j];
-          const dx = p1.x - p2.x; const dy = p1.y - p2.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 220) {
-            ctx.shadowBlur = 0; ctx.beginPath();
-            ctx.strokeStyle = `rgba(34, 211, 238, ${0.7 * (1 - dist / 220)})`;
-            ctx.lineWidth = 1.2; ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
-          }
-        }
-      }
-      ctx.globalCompositeOperation = 'source-over';
-      animationFrameId = requestAnimationFrame(animate);
-    };
-    window.addEventListener('resize', resize);
-    resize(); animate();
-    return () => {
-      window.removeEventListener('resize', resize);
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, []);
-  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{ zIndex: 0 }} />;
-};
+import NeuralNetwork from '../components/NeuralNetwork';
 
 // --- 2. REUSABLE CYBER INPUT (UPDATED LABELS) ---
 const CyberInput = ({ label, name, value, onChange, type = "text", placeholder }) => {
@@ -114,7 +44,10 @@ const EditProfilePage = () => {
     role: '',
     bio: '',
     github: '',
-    linkedin: ''
+    linkedin: '',
+    rollNumber: '',
+    branch: '',
+    college: ''
   });
 
   useEffect(() => {
@@ -135,7 +68,10 @@ const EditProfilePage = () => {
           role: data.role || '',   
           bio: data.bio || '',
           github: data.github || '',
-          linkedin: data.linkedin || ''
+          linkedin: data.linkedin || '',
+          rollNumber: data.rollNumber || '',
+          branch: data.branch || '',
+          college: data.college || ''
         });
       })
       .catch((err) => {
@@ -221,6 +157,31 @@ const EditProfilePage = () => {
                             onChange={handleChange} 
                         />
                     </div>
+                </div>
+
+                {/* Academic/College Info */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <CyberInput 
+                        label="Roll Number" 
+                        name="rollNumber" 
+                        value={formData.rollNumber} 
+                        onChange={handleChange} 
+                        placeholder="e.g. 22103045"
+                    />
+                    <CyberInput 
+                        label="Branch" 
+                        name="branch" 
+                        value={formData.branch} 
+                        onChange={handleChange} 
+                        placeholder="e.g. CSE"
+                    />
+                    <CyberInput 
+                        label="College" 
+                        name="college" 
+                        value={formData.college} 
+                        onChange={handleChange} 
+                        placeholder="e.g. NIT Jalandhar"
+                    />
                 </div>
 
                 {/* Row 2: Bio */}

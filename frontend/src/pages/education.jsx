@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // --- NEURAL NETWORK BACKGROUND (Unchanged) ---
 const NeuralNetwork = () => {
@@ -72,6 +73,7 @@ const NeuralNetwork = () => {
 };
 
 const EducationPage = () => {
+  const navigate = useNavigate();
   const [mounted, setMounted] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -105,13 +107,7 @@ const EducationPage = () => {
   const visibleThreats = allThreats.slice(currentIndex, currentIndex + 3);
 
   const handleReturn = () => {
-    window.location.hash = '#about';
-    setTimeout(() => {
-      const target = document.getElementById('about') || document.getElementById('about-grid');
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }, 10);
+    navigate('/');
   };
 
   return (

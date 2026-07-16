@@ -1,5 +1,86 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { motion } from "framer-motion";
+
+/* ---------- DYNAMIC STARLIGHT PARTICLES ---------- */
+const LoginBackground = () => {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let animationFrameId;
+    let particles = [];
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+
+    class Particle {
+      constructor() {
+        this.reset();
+      }
+      reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 1.5 + 0.5;
+        this.speedY = -(Math.random() * 0.4 + 0.1);
+        this.speedX = (Math.random() - 0.5) * 0.2;
+        this.opacity = Math.random() * 0.4 + 0.1;
+        this.fade = Math.random() * 0.005 + 0.002;
+      }
+      update() {
+        this.y += this.speedY;
+        this.x += this.speedX;
+        this.opacity -= this.fade;
+        if (this.y < 0 || this.opacity <= 0) {
+          this.reset();
+          this.y = canvas.height;
+        }
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(0, 209, 255, ${this.opacity})`;
+        ctx.shadowBlur = 5;
+        ctx.shadowColor = "#00d1ff";
+        ctx.fill();
+        ctx.shadowBlur = 0; // reset
+      }
+    }
+
+    const init = () => {
+      particles = [];
+      const count = Math.min(Math.floor(canvas.width / 20), 60);
+      for (let i = 0; i < count; i++) {
+        particles.push(new Particle());
+      }
+    };
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    resize();
+    init();
+    animate();
+
+    window.addEventListener("resize", resize);
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none" />;
+};
 
 function Login(props) {
   const navigate = useNavigate();
@@ -9,121 +90,181 @@ function Login(props) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-const handleLogin = async (e) => {
-  e.preventDefault();
-  setError("");
-  setLoading(true);
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
-  try {
-    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || "Login failed");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Login failed");
 
-    // ✅ 1. Get the role (it's at the root level based on your JSON snippet)
-    const userRole = data.role || "user"; 
+      const userRole = data.role || "user"; 
 
-    // ✅ 2. Construct the FULL user object including the role
-    const fullUserData = {
-      _id: data._id,
-      name: data.name,
-      email: data.email,
-      role: userRole, // 👈 This MUST be here
-      token: data.token
-    };
+      const fullUserData = {
+        _id: data._id,
+        name: data.name,
+        email: data.email,
+        role: userRole,
+        token: data.token
+      };
 
-    // ✅ 3. Save to Local Storage
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("role", userRole); 
-    localStorage.setItem("user", JSON.stringify(fullUserData)); 
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("role", userRole); 
+      localStorage.setItem("user", JSON.stringify(fullUserData)); 
 
-    // ✅ 4. Update App State
-    if (props.onLogin) props.onLogin(fullUserData);
+      if (props.onLogin) props.onLogin(fullUserData);
 
-    // ✅ 5. Navigate
-    navigate(userRole === "admin" ? "/admin" : "/profile");
+      navigate(userRole === "admin" ? "/admin" : "/profile");
 
-  } catch (err) {
-    setError(err.message);
-  } finally {
-    setLoading(false);
-  }
-};
-
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#00050a] px-4">
-      <div className="relative w-full max-w-md">
+    <div 
+      className="min-h-screen relative flex items-start justify-center bg-[#020617] px-4 overflow-hidden pt-36 pb-16"
+      style={{
+        backgroundImage: "radial-gradient(circle at center, rgba(3, 105, 161, 0.05) 0%, transparent 70%), linear-gradient(rgba(255, 255, 255, 0.005) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.005) 1px, transparent 1px)",
+        backgroundSize: "100%, 20px 20px, 20px 20px"
+      }}
+    >
+      {/* Background elements */}
+      <LoginBackground />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[450px] bg-cyan-500/[0.06] rounded-full blur-[100px] pointer-events-none animate-pulse" />
 
-        {/* Glow */}
-        <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-cyan-500/40 to-blue-500/40 blur-lg opacity-40"></div>
+      {/* Main card box */}
+      <div className="relative w-full max-w-[440px] z-10">
+        
+        {/* Glow border sweep */}
+        <div className="absolute -inset-[1px] bg-gradient-to-r from-cyan-500/30 via-blue-500/20 to-cyan-500/30 rounded-2xl opacity-50 blur-[3px]" />
 
+        {/* Form panel */}
         <form
           onSubmit={handleLogin}
-          className="relative bg-[#0a0f1d] border border-cyan-500/30 p-10 rounded-2xl shadow-[0_0_60px_rgba(0,209,255,0.15)]"
+          className="relative bg-[#050b14]/90 backdrop-blur-3xl border border-cyan-500/20 pt-14 pb-10 px-8 md:px-10 rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.8)] flex flex-col"
         >
-          <h1 className="text-3xl font-black italic uppercase text-center text-white">
-            Terminal <span className="text-cyan-400">Login</span>
-          </h1>
+          {/* Cyber HUD Brackets */}
+          <div className="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 border-cyan-500/40 rounded-tl-xl pointer-events-none" />
+          <div className="absolute top-0 right-0 w-5 h-5 border-t-2 border-r-2 border-cyan-500/40 rounded-tr-xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-5 h-5 border-b-2 border-l-2 border-cyan-500/40 rounded-bl-xl pointer-events-none" />
+          <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-cyan-500/40 rounded-br-xl pointer-events-none" />
 
-          <p className="text-gray-500 text-[10px] font-bold tracking-[0.35em] uppercase text-center mt-2 mb-10">
-            Authorization Required
-          </p>
+          {/* Top aesthetic glow line */}
+          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent" />
 
-          <input
-            type="email"
-            placeholder="student@nitj.ac.in"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full bg-black/50 border border-white/10 rounded-lg p-4 mb-4 text-white text-xs font-mono focus:border-cyan-500/60 outline-none"
-            required
-          />
+          {/* Title Header */}
+          <div className="mb-8 text-center mt-4">
+            <h1 className="text-3xl font-black italic uppercase tracking-wider text-white">
+              Terminal <span className="text-cyan-400 drop-shadow-[0_0_15px_rgba(0,209,255,0.3)]">Login</span>
+            </h1>
+            <p className="text-slate-500 text-[9px] font-bold tracking-[0.4em] uppercase mt-2">
+              // Authorization Required
+            </p>
+          </div>
 
-          <input
-            type="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full bg-black/50 border border-white/10 rounded-lg p-4 mb-4 text-white text-xs font-mono focus:border-cyan-500/60 outline-none"
-            required
-          />
+          {/* Inputs Section */}
+          <div className="space-y-4 mb-6">
+            
+            {/* Email Field */}
+            <div className="relative group/input">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 group-focus-within/input:text-cyan-400 transition-colors duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                </svg>
+              </div>
+              <input
+                type="email"
+                placeholder="student@nitj.ac.in"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-[#020617]/85 border border-white/5 hover:border-cyan-500/30 focus:border-cyan-400 focus:shadow-[0_0_15px_rgba(0,209,255,0.1)] rounded-xl py-3.5 pl-11 pr-4 text-white text-xs font-mono transition-all duration-300 outline-none placeholder:text-slate-600"
+                required
+              />
+            </div>
 
+            {/* Password Field */}
+            <div className="relative group/input">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 group-focus-within/input:text-cyan-400 transition-colors duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-[#020617]/85 border border-white/5 hover:border-cyan-500/30 focus:border-cyan-400 focus:shadow-[0_0_15px_rgba(0,209,255,0.1)] rounded-xl py-3.5 pl-11 pr-4 text-white text-xs font-mono transition-all duration-300 outline-none placeholder:text-slate-600"
+                required
+              />
+            </div>
+
+          </div>
+
+          {/* Error Banner */}
           {error && (
-            <div className="text-red-500 text-[9px] font-bold tracking-widest uppercase bg-red-500/5 p-2 border-l-2 border-red-500 mb-4">
-              ⚠️ {error}
+            <div className="text-red-400 text-[10px] font-bold tracking-widest uppercase bg-red-500/5 border border-red-500/20 p-3 rounded-xl mb-6 flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-red-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span>{error}</span>
             </div>
           )}
 
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-cyan-500 text-black font-black py-4 rounded-lg text-xs tracking-[0.25em] uppercase hover:bg-cyan-400 transition"
+            className="w-full relative group bg-cyan-500 hover:bg-cyan-400 disabled:bg-cyan-800 text-[#020617] font-black py-4 rounded-xl text-xs tracking-[0.25em] uppercase transition-all duration-300 cursor-pointer shadow-[0_0_20px_rgba(0,209,255,0.2)] hover:shadow-[0_0_30px_rgba(0,209,255,0.4)] disabled:shadow-none flex items-center justify-center gap-2"
           >
-            {loading ? "VERIFYING..." : "VERIFY IDENTITY"}
+            {loading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-[#020617] border-t-transparent rounded-full animate-spin" />
+                <span>VERIFYING ID...</span>
+              </>
+            ) : (
+              <span>VERIFY IDENTITY</span>
+            )}
           </button>
 
-          <div className="flex items-center gap-4 my-8">
-            <div className="flex-1 h-px bg-white/10"></div>
-            <span className="text-gray-500 text-[9px] font-bold tracking-[0.3em] uppercase">
+          {/* Decorative Divider */}
+          <div className="flex items-center gap-4 my-6">
+            <div className="flex-1 h-[1px] bg-white/5"></div>
+            <span className="text-slate-600 text-[8px] font-mono tracking-[0.3em] uppercase">
               OR
             </span>
-            <div className="flex-1 h-px bg-white/10"></div>
+            <div className="flex-1 h-[1px] bg-white/5"></div>
           </div>
 
-          <p className="text-center text-gray-400 text-xs">
-            Don’t have an account?
-          </p>
+          {/* Alternate Navigation */}
+          <div className="text-center">
+            <p className="text-slate-500 text-xs mb-3">
+              Don’t have an account?
+            </p>
+            <Link
+              to="/register"
+              className="inline-block text-cyan-400 hover:text-cyan-300 text-xs font-black tracking-[0.2em] uppercase transition-all duration-300 hover:scale-103"
+            >
+              Create New Account
+            </Link>
+          </div>
+          
+          {/* Bottom telemetry status decoration */}
+          <div className="flex justify-between items-center mt-8 pt-4 border-t border-white/5 text-[8px] font-mono text-slate-600">
+            <span>SECURE_AUTH // V3.2</span>
+            <span>SYS_READY</span>
+          </div>
 
-          <Link
-            to="/register"
-            className="block text-center mt-3 text-cyan-400 text-xs font-black tracking-[0.25em] uppercase hover:text-cyan-300 transition"
-          >
-            Create New Account
-          </Link>
         </form>
       </div>
     </div>

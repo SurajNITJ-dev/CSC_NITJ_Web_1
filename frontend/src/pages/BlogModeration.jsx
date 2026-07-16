@@ -10,10 +10,10 @@ const BlogModeration = () => {
     const fetchBlogs = async () => {
       try {
         // Fetching all blogs to filter them by status in the UI
-        const res = await fetch("http://localhost:5000/api/blogs", {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/blogs`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        const pendingRes = await fetch("http://localhost:5000/api/blogs/pending", {
+        const pendingRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/blogs/pending`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         
@@ -32,7 +32,7 @@ const BlogModeration = () => {
   // 3. Update the backend status
   const updateStatus = async (id, newStatus) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/blogs/moderate/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/blogs/moderate/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

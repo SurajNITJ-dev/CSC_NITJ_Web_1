@@ -5,7 +5,6 @@ import vikashImg from '../assets/vikash.png';
 import kritikaImg from '../assets/kritika.png';
 import jassImg from '../assets/jass.png';
 import samarthImg from '../assets/samarth.jsx.png';
-import pranjalImg from '../assets/pranjal.png';
 import komleenImg from '../assets/komleen.png';
 import simranImg from '../assets/simran.png';
 import dhruvSagarImg from '../assets/dhruv_sagar.png';
@@ -300,11 +299,9 @@ const TeamsPage = () => {
         </div>
       </section>
 
-      {/* MANAGEMENT */}
       <section className={`relative z-10 pt-24 pb-20 px-6 max-w-5xl mx-auto transition-all duration-1000 delay-[900ms] transform ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'}`}>
         <SectionHeading title="Management" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-          <MemberCard ref={addToRefs} name="Pranjal Bansal" role="Member" type="member" image={pranjalImg} />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
           <MemberCard ref={addToRefs} name="Dhruv Sagar" role="Member" type="member" image={dhruvSagarImg} />
           <MemberCard ref={addToRefs} name="Komleen Kaur" role="Member" type="member" image={komleenImg} />
         </div>

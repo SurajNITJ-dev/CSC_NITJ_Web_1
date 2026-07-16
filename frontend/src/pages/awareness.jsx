@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // --- NEURAL NETWORK BACKGROUND ---
 const NeuralNetwork = () => {
@@ -72,6 +73,7 @@ const NeuralNetwork = () => {
 };
 
 const AwarenessPage = () => {
+  const navigate = useNavigate();
   const [visibleIndex, setVisibleIndex] = useState(0);
   const [isFading, setIsFading] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -117,17 +119,7 @@ const AwarenessPage = () => {
 
   const handleReturn = (e) => {
     e.preventDefault();
-    window.location.hash = '#about';
-    
-    setTimeout(() => {
-      // Targets the cards grid on the home page
-      const target = document.getElementById('about-grid') || 
-                     document.getElementById('about');
-                     
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }, 100);
+    navigate('/');
   };
 
   return (

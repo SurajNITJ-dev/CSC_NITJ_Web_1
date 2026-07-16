@@ -11,15 +11,14 @@ import {
   FaUsers,
   FaBlog,
   FaCalendarAlt,
-  FaProjectDiagram,
-  FaChalkboardTeacher,
-  FaEnvelope,
+  FaBookOpen,
+  FaShieldAlt,
+  FaTrophy,
 } from "react-icons/fa";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
-  // Helper to ensure page starts at top on navigation
   const handleScrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -38,13 +37,15 @@ const Footer = () => {
           <div className="flex flex-col lg:grid lg:grid-cols-4 gap-12 lg:gap-14 mb-16">
 
             {/* Brand */}
-            <div className="flex flex-col gap-5">
-              <img
-                src={logo}
-                alt="CSC NITJ Logo"
-                className="w-40 object-contain drop-shadow-[0_0_15px_rgba(0,209,255,0.3)]"
-              />
-              <h2 className="text-2xl font-extrabold tracking-tight">
+            <div className="flex flex-col gap-3">
+              <Link to="/" onClick={handleScrollToTop} className="inline-block">
+                <img
+                  src={logo}
+                  alt="CSC NITJ Logo"
+                  className="w-20 object-contain drop-shadow-[0_0_15px_rgba(0,209,255,0.35)]"
+                />
+              </Link>
+              <h2 className="text-xl font-extrabold tracking-tight mt-1">
                 CSC <span className="text-[#00D1FF]">NITJ</span>
               </h2>
               <p className="text-gray-400 text-sm leading-relaxed max-w-xs">
@@ -59,25 +60,23 @@ const Footer = () => {
               </h3>
               <ul className="flex flex-col gap-4 text-gray-400 text-sm">
                 {[
-                  { name: "Home", icon: <FaHome /> },
-                  { name: "About", icon: <FaInfoCircle /> },
-                  { name: "Team", icon: <FaUsers /> },
-                  { name: "Blog", icon: <FaBlog /> },
-                ].map(({ name, icon }) => (
+                  { name: "Home", path: "/", icon: <FaHome /> },
+                  { name: "About", path: "/about", icon: <FaInfoCircle /> },
+                  { name: "Team", path: "/team", icon: <FaUsers /> },
+                  { name: "Blog", path: "/blog", icon: <FaBlog /> },
+                ].map(({ name, path, icon }) => (
                   <li key={name}>
-                    <a href="#" className="group flex items-center gap-3">
-                      <span className="opacity-80 group-hover:opacity-100">
+                    <Link to={path} onClick={handleScrollToTop} className="group flex items-center gap-3 w-fit">
+                      <span className="opacity-80 group-hover:opacity-100 group-hover:text-[#00D1FF] transition-colors">
                         {icon}
                       </span>
-
-                      {/* TEXT + UNDERLINE (FIXED) */}
                       <span className="relative inline-block">
                         <span className="group-hover:text-[#00D1FF] transition-colors">
                           {name}
                         </span>
                         <span className="absolute left-0 -bottom-1 w-0 h-[1px] bg-[#00D1FF] transition-all duration-300 group-hover:w-full" />
                       </span>
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -90,25 +89,23 @@ const Footer = () => {
               </h3>
               <ul className="flex flex-col gap-4 text-gray-400 text-sm">
                 {[
-                  { name: "Events", icon: <FaCalendarAlt /> },
-                  { name: "Projects", icon: <FaProjectDiagram /> },
-                  { name: "Workshops", icon: <FaChalkboardTeacher /> },
-                  { name: "Contact", icon: <FaEnvelope /> },
-                ].map(({ name, icon }) => (
+                  { name: "Events", path: "/events", icon: <FaCalendarAlt /> },
+                  { name: "Education", path: "/education", icon: <FaBookOpen /> },
+                  { name: "Awareness", path: "/awareness", icon: <FaShieldAlt /> },
+                  { name: "Competitions", path: "/competitions", icon: <FaTrophy /> },
+                ].map(({ name, path, icon }) => (
                   <li key={name}>
-                    <a href="#" className="group flex items-center gap-3">
-                      <span className="opacity-80 group-hover:opacity-100">
+                    <Link to={path} onClick={handleScrollToTop} className="group flex items-center gap-3 w-fit">
+                      <span className="opacity-80 group-hover:opacity-100 group-hover:text-[#00D1FF] transition-colors">
                         {icon}
                       </span>
-
-                      {/* TEXT + UNDERLINE (FIXED) */}
                       <span className="relative inline-block">
                         <span className="group-hover:text-[#00D1FF] transition-colors">
                           {name}
                         </span>
                         <span className="absolute left-0 -bottom-1 w-0 h-[1px] bg-[#00D1FF] transition-all duration-300 group-hover:w-full" />
                       </span>
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -121,25 +118,25 @@ const Footer = () => {
               </h3>
               <ul className="flex flex-col gap-5 text-gray-400 text-sm">
                 <li>
-                  <a href="#" className="group flex items-center gap-4 hover:text-[#00D1FF] transition-colors">
+                  <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="group flex items-center gap-4 hover:text-[#00D1FF] transition-colors w-fit">
                     <FaInstagram className="text-lg opacity-80 group-hover:opacity-100" />
                     Instagram
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="group flex items-center gap-4 hover:text-[#00D1FF] transition-colors">
+                  <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="group flex items-center gap-4 hover:text-[#00D1FF] transition-colors w-fit">
                     <FaLinkedinIn className="text-lg opacity-80 group-hover:opacity-100" />
                     LinkedIn
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="group flex items-center gap-4 hover:text-[#00D1FF] transition-colors">
+                  <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="group flex items-center gap-4 hover:text-[#00D1FF] transition-colors w-fit">
                     <FaGithub className="text-lg opacity-80 group-hover:opacity-100" />
                     GitHub
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="group flex items-center gap-4 hover:text-[#00D1FF] transition-colors">
+                  <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="group flex items-center gap-4 hover:text-[#00D1FF] transition-colors w-fit">
                     <FaTwitter className="text-lg opacity-80 group-hover:opacity-100" />
                     Twitter
                   </a>
@@ -149,10 +146,13 @@ const Footer = () => {
           </div>
 
           {/* Copyright */}
-          <div className="pt-8 border-t border-white/5 flex justify-center">
+          <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-gray-500 text-[11px] tracking-[0.15em] uppercase">
-              © 2025 CSC NITJ • Built with ⚡ by the Cyber Team
+              © {currentYear} CSC NITJ • Built with ⚡ by the Cyber Team
             </p>
+            <span className="text-[10px] font-mono text-cyan-500/30 tracking-wider">
+              // SECURING_THE_FUTURE
+            </span>
           </div>
         </div>
       </footer>

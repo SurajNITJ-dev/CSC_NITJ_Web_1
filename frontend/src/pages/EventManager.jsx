@@ -12,7 +12,7 @@ export default function EventManager() {
   useEffect(() => {
     const fetchAdminEvents = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/events", {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/events`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
@@ -29,7 +29,7 @@ export default function EventManager() {
     if (!title || !date) return;
     
     try {
-      const res = await fetch("http://localhost:5000/api/events", {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/events`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -62,7 +62,7 @@ export default function EventManager() {
     const newStatus = currentStatus === "Published" ? "Draft" : "Published";
     
     try {
-      const res = await fetch(`http://localhost:5000/api/events/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/events/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -86,7 +86,7 @@ export default function EventManager() {
     if (!window.confirm("Are you sure you want to delete this event?")) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/events/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/events/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
